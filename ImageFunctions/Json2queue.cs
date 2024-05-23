@@ -22,7 +22,8 @@ namespace ImageFunctions
 {
     public static class Json2queue
     {
-        private static readonly string BLOB_STORAGE_CONNECTION_STRING = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+        //private static readonly string BLOB_STORAGE_CONNECTION_STRING = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+        private static readonly string BLOB_STORAGE_CONNECTION_STRING = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
 
         private static string GetBlobNameFromUrl(string bloblUrl)
         {
@@ -34,7 +35,7 @@ namespace ImageFunctions
         [FunctionName("Json2queue")]
         public static async Task Run(
             [EventGridTrigger]EventGridEvent eventGridEvent,
-            [Blob("{data.url}", FileAccess.Read)] Stream input,
+            [Blob("{data.url}", FileAccess.Read, Connection="AZURE_STORAGE_CONNECTION_STRING")] Stream input,
             ILogger log)
         {
             try
@@ -49,8 +50,7 @@ namespace ImageFunctions
                         var jsObj = serializer.Deserialize(jsonTextReader);
                         log.LogError(jsObj.ToString());
 
-                        string connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
-                        QueueClient queue = new QueueClient(connectionString, "mdms-new-ticket-json-0");
+                        QueueClient queue = new QueueClient(BLOB_STORAGE_CONNECTION_STRING, "mdms-new-ticket-json-0");
 
                         await InsertMessageAsync(queue, jsObj.ToString());
                     }
