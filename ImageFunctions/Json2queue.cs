@@ -47,10 +47,10 @@ namespace ImageFunctions
                     using (var jsonTextReader = new JsonTextReader(sr))
                     {
                         var jsObj = serializer.Deserialize(jsonTextReader);
-                        log.LogDebug(jsObj.ToString());
+                        log.LogError(jsObj.ToString());
 
                         string connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
-                        QueueClient queue = new QueueClient(connectionString, "mdms-new-ticket-json");
+                        QueueClient queue = new QueueClient(connectionString, "mdms-new-ticket-json-0");
 
                         await InsertMessageAsync(queue, jsObj.ToString());
                     }
