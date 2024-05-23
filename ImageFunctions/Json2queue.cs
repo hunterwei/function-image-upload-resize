@@ -46,6 +46,7 @@ namespace ImageFunctions
                     using (var jsonTextReader = new JsonTextReader(sr))
                     {
                         var jsObj = serializer.Deserialize(jsonTextReader);
+                        log.LogInformation(jsObj.ToString());
                     }
                 }
             }
