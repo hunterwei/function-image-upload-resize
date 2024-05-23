@@ -9,6 +9,7 @@
 
 using Azure.Messaging.EventGrid;
 using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
@@ -46,9 +47,12 @@ namespace ImageFunctions
                     using (var jsonTextReader = new JsonTextReader(sr))
                     {
                         var jsObj = serializer.Deserialize(jsonTextReader);
-                        log.LogDebug("%%%%%%%%%");
                         log.LogDebug(jsObj.ToString());
-                        log.LogDebug("%%%%%%%%%");
+
+                        string connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+                        QueueClient queue = new QueueClient(connectionString, "mdms-new-ticket-json");
+
+                        await InsertMessageAsync(queue, jsObj.ToString());
                     }
                 }
             }
@@ -57,6 +61,16 @@ namespace ImageFunctions
                 log.LogInformation(ex.Message);
                 throw;
             }
+        }
+
+        static async Task InsertMessageAsync(QueueClient theQueue, string newMessage)
+        {
+            if (null != await theQueue.CreateIfNotExistsAsync())
+            {
+                Console.WriteLine("The queue was created.");
+            }
+
+            await theQueue.SendMessageAsync(newMessage);
         }
     }
 }
